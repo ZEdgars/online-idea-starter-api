@@ -47,10 +47,21 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    // Log the full error object to Netlify's Function Logs
+    console.error("Gemini API Error:", error.message || error); 
+    
+    // Check for a specific API error message to return to the user (optional)
+    let userErrorMessage = "Failed to generate card content due to a server error.";
+
+    if (error.message && error.message.includes("API key not valid")) {
+        userErrorMessage = "Authentication failed: API Key may be invalid or restricted.";
+    } else if (error.message && error.message.includes("403")) {
+        userErrorMessage = "Permission denied: API Key may lack necessary permissions.";
+    }
+
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to generate card content due to a server error." }),
+      body: JSON.stringify({ error: userErrorMessage }),
     };
   }
-};
+}; // End of exports.handler
