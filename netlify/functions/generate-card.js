@@ -28,13 +28,13 @@ exports.handler = async (event, context) => {
         ],
         config: {
             temperature: 0.9, // High creativity
-            maxOutputTokens: 50 // Ensures brevity
+            // 🛑 FIX: Increased maxOutputTokens to prevent 'MAX_TOKENS' finishReason
+            maxOutputTokens: 150 
         }
     });
 
-    // 🛑 FIX: Check if the text property exists before calling .trim()
+    // 🛑 Guard clause to handle unexpected empty responses (which caught the error)
     if (!response.text) {
-        // Log the full response object to Netlify logs for debugging the empty result
         console.error("Gemini API Error: Response text was null or undefined. Full Response:", JSON.stringify(response));
         return {
             statusCode: 500,
@@ -49,7 +49,6 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
-        // This header is essential for allowing your Wix/Webflow page to talk to this Netlify function.
         "Access-Control-Allow-Origin": "*", 
         "Access-Control-Allow-Methods": "GET"
       },
@@ -74,4 +73,4 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ error: userErrorMessage }),
     };
   }
-}; // End of exports.handler
+};
