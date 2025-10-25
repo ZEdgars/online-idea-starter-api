@@ -9,7 +9,6 @@ const PROMPT = "Generate a single, unique, creative constraint or unexpected ide
 // The 'exports.handler' function is what Netlify runs when the public URL is accessed.
 exports.handler = async (event, context) => {
   // 2. Initialize the AI Client
-  // It securely reads the GEMINI_API_KEY environment variable set on Netlify.
   if (!process.env.GEMINI_API_KEY) {
       return {
           statusCode: 500,
@@ -28,12 +27,16 @@ exports.handler = async (event, context) => {
         ],
         config: {
             temperature: 0.9, // High creativity
-            // 🛑 FIX: Increased maxOutputTokens to prevent 'MAX_TOKENS' finishReason
-            maxOutputTokens: 500 
+            // 🛑 CRITICAL FIX: Disable thinking to prevent massive thoughtTokenCount
+            thinkingConfig: {
+                mode: 'DISABLED'
+            },
+            // Reset maxOutputTokens to a reasonable short value now that thinking is off
+            maxOutputTokens: 50 
         }
     });
 
-    // 🛑 Guard clause to handle unexpected empty responses (which caught the error)
+    // Guard clause to handle unexpected empty responses (which was the original fix)
     if (!response.text) {
         console.error("Gemini API Error: Response text was null or undefined. Full Response:", JSON.stringify(response));
         return {
