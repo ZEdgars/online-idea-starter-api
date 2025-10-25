@@ -29,7 +29,7 @@ exports.handler = async (event, context) => {
         config: {
             temperature: 0.9, // High creativity
             // 🛑 FIX: Increased maxOutputTokens to prevent 'MAX_TOKENS' finishReason
-            maxOutputTokens: 200 
+            maxOutputTokens: 500 
         }
     });
 
