@@ -27,16 +27,13 @@ exports.handler = async (event, context) => {
         ],
         config: {
             temperature: 0.9, // High creativity
-            // 🛑 CRITICAL FIX: Disable thinking to prevent massive thoughtTokenCount
-            thinkingConfig: {
-                mode: 'DISABLED'
-            },
-            // Reset maxOutputTokens to a reasonable short value now that thinking is off
-            maxOutputTokens: 50 
+            // 🛑 FINAL FIX: Removed thinkingConfig block and set maxOutputTokens very high 
+            // to bypass the excessive internal thought token consumption.
+            maxOutputTokens: 2048 
         }
     });
 
-    // Guard clause to handle unexpected empty responses (which was the original fix)
+    // Guard clause (original fix) remains to prevent crash on undefined text
     if (!response.text) {
         console.error("Gemini API Error: Response text was null or undefined. Full Response:", JSON.stringify(response));
         return {
@@ -69,7 +66,10 @@ exports.handler = async (event, context) => {
         userErrorMessage = "Authentication failed: API Key may be invalid or restricted.";
     } else if (error.message && error.message.includes("403")) {
         userErrorMessage = "Permission denied: API Key may lack necessary permissions.";
-    }
+    } else if (error.message && error.message.includes("Invalid JSON payload")) {
+         // Catch the specific error you just saw
+         userErrorMessage = "Configuration error: The AI model configuration is invalid.";
+    }
 
     return {
       statusCode: 500,
